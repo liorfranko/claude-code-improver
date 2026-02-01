@@ -82,6 +82,33 @@ For each domain in `core/`:
 
 **Report**: List domains missing proper exception handling.
 
+### 8. Configuration (CRITICAL)
+
+**No static configuration allowed.** Search for forbidden patterns:
+
+```bash
+# Search for hardcoded connection strings
+grep -rn "postgresql://" --include="*.py" src/ | grep -v "example\|template\|test"
+grep -rn "redis://" --include="*.py" src/ | grep -v "example\|template\|test"
+grep -rn "mongodb://" --include="*.py" src/ | grep -v "example\|template\|test"
+
+# Search for config file loading
+grep -rn "yaml.load\|yaml.safe_load\|json.load\|tomllib.load" --include="*.py" src/
+
+# Search for hardcoded secrets patterns
+grep -rn "API_KEY\s*=\s*['\"]" --include="*.py" src/
+grep -rn "SECRET\s*=\s*['\"]" --include="*.py" src/
+grep -rn "PASSWORD\s*=\s*['\"]" --include="*.py" src/
+```
+
+Verify proper configuration:
+- `src/core/config.py` exists with `Settings(BaseSettings)`
+- `.env.example` exists with all environment variables documented
+- `.env` is in `.gitignore`
+- No config YAML/JSON/TOML files with actual values
+
+**Report**: List all hardcoded configuration violations. This is a CRITICAL failure.
+
 ## Output Format
 
 Present results as a summary table:
@@ -95,6 +122,7 @@ Present results as a summary table:
 | Docstring Style | PASS/FAIL | X issues |
 | Naming Conventions | PASS/FAIL | X issues |
 | Exception Hierarchy | PASS/FAIL | X issues |
+| **Configuration** | PASS/FAIL | X issues (CRITICAL) |
 
 Then provide detailed findings for each failing check.
 

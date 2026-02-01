@@ -35,6 +35,7 @@ Or add to your Claude Code settings to enable permanently.
 | Logging | structlog |
 | Errors | Domain-specific exceptions per module |
 | Files | One class/concern per file |
+| **Config** | **pydantic-settings only, NO hardcoded values** |
 
 ## Project Structure
 
@@ -44,12 +45,15 @@ The plugin enforces this structure for Python projects:
 project-name/
 ├── pyproject.toml
 ├── .python-version
+├── .env                      # Local config (gitignored)
+├── .env.example              # Config template (committed)
 ├── src/
 │   ├── cli/ (or api/)
 │   ├── utils/
 │   ├── models/
 │   │   └── base.py          # BaseSchema
 │   └── core/
+│       ├── config.py        # pydantic-settings
 │       └── <domain>/
 │           ├── service.py
 │           ├── repository.py

@@ -256,6 +256,132 @@ src/core/users/
 - Mixing models with services
 - Putting exceptions in model files
 
+## Configuration Management
+
+**STRICT RULE: No static configuration values in code. All configuration MUST come from environment variables via pydantic-settings.**
+
+### Forbidden Patterns
+
+```python
+# NEVER DO THIS - hardcoded values
+DATABASE_URL = "postgresql://localhost/mydb"  # FORBIDDEN
+API_TIMEOUT = 30  # FORBIDDEN
+DEBUG = True  # FORBIDDEN
+
+# NEVER DO THIS - config files with values
+config = yaml.load("config.yaml")  # FORBIDDEN
+settings = json.load("settings.json")  # FORBIDDEN
+```
+
+### Required Pattern: pydantic-settings
+
+All configuration must use `pydantic-settings` with environment variables:
+
+```python
+# src/core/config.py
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    """Application settings from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="forbid",  # Fail on unknown env vars
+    )
+
+    # Database - REQUIRED, no default
+    database_url: str = Field(..., description="PostgreSQL connection string")
+
+    # API - with sensible defaults
+    api_host: str = Field(default="0.0.0.0", description="API bind host")
+    api_port: int = Field(default=8000, ge=1, le=65535, description="API port")
+
+    # Feature flags
+    debug: bool = Field(default=False, description="Enable debug mode")
+
+    # Secrets - REQUIRED, validated
+    secret_key: str = Field(..., min_length=32, description="JWT signing key")
+
+
+# Singleton instance - validates on import
+settings = Settings()
+```
+
+### Configuration Rules
+
+| Rule | Description |
+|------|-------------|
+| **No hardcoded values** | All config from env vars, never in code |
+| **No config files** | No YAML/JSON/TOML with actual values |
+| **Validate on startup** | App fails fast if config invalid |
+| **Type everything** | All settings fully typed with Pydantic |
+| **Document all vars** | `.env.example` with all variables |
+| **Secrets via env** | Never commit secrets, use env vars |
+
+### Required Files
+
+```
+project/
+├── .env              # Local values (GITIGNORED)
+├── .env.example      # Documented template (committed)
+└── src/core/
+    └── config.py     # Settings class
+```
+
+### .env.example Template
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/dbname
+
+# API
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# Security (generate with: openssl rand -hex 32)
+SECRET_KEY=your-32-char-minimum-secret-key-here
+
+# Feature Flags
+DEBUG=false
+```
+
+### Using Settings
+
+```python
+# Import the singleton
+from src.core.config import settings
+
+# Use typed values directly
+db = connect(settings.database_url)
+app.run(host=settings.api_host, port=settings.api_port)
+
+# NEVER do this
+from src.core.config import Settings
+s = Settings()  # Creates new instance, wasteful
+```
+
+### Nested Configuration
+
+For complex configs, use nested models:
+
+```python
+class DatabaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="DB_")
+
+    url: str
+    pool_size: int = 5
+    echo: bool = False
+
+class Settings(BaseSettings):
+    db: DatabaseSettings = DatabaseSettings()
+    # ...
+```
+
+Environment variables: `DB_URL`, `DB_POOL_SIZE`, `DB_ECHO`
+
 ## Additional Resources
 
 ### Templates
@@ -263,8 +389,11 @@ src/core/users/
 Scaffold templates available in `templates/`:
 - **`pyproject.toml.template`** - Project configuration with uv, pytest, ruff
 - **`base_schema.py.template`** - BaseSchema implementation
+- **`config.py.template`** - Settings class with pydantic-settings
+- **`env.example.template`** - Environment variables template
 
 ### References
 
 For detailed examples, see `references/`:
 - **`references/patterns.md`** - Common code patterns
+- **`references/config.md`** - Configuration patterns and examples
