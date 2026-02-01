@@ -1,20 +1,22 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-code-improver",
+  "description": "Python development standards and conventions",
   "owner": {
-    "name": "Lior Franko",
-    "url": "https://github.com/liorfranko"
+    "name": "liorfr",
+    "email": "lior@example.com"
   },
   "plugins": [
     {
       "name": "claude-code-improver",
-      "displayName": "Python Development Standards",
       "description": "Enforces Python coding standards with hierarchical structure, Pydantic, typing, Google docstrings, structlog, and domain exceptions",
       "version": "1.0.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/liorfranko/claude-code-improver.git"
+      "author": {
+        "name": "liorfr",
+        "email": "lior@example.com"
       },
-      "category": "Development",
-      "tags": ["python", "pydantic", "standards", "scaffold", "typing", "code-quality"]
+      "source": ".",
+      "category": "development"
     }
   ]
 }
