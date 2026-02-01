@@ -1,0 +1,17 @@
+{
+  "description": "Auto-detect Python projects and load standards context",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/detect-python.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

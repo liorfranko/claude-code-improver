@@ -1,0 +1,17 @@
+"""Base Pydantic schema for the project."""
+
+from pydantic import BaseModel, ConfigDict
+
+
+class BaseSchema(BaseModel):
+    """Base model for all Pydantic schemas.
+
+    Provides common configuration for all models in the project:
+    - from_attributes: Enable ORM mode for database model conversion
+    - str_strip_whitespace: Automatically strip whitespace from strings
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        str_strip_whitespace=True,
+    )
