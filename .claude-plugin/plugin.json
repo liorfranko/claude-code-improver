@@ -1,6 +1,6 @@
 {
   "name": "claude-code-improver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enforces Python coding standards: hierarchical structure, Pydantic, typing, Google docstrings, structlog, domain exceptions",
   "author": {
     "name": "Lior Franko"

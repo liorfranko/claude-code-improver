@@ -10,7 +10,7 @@
     {
       "name": "claude-code-improver",
       "description": "Enforces Python coding standards with hierarchical structure, Pydantic, typing, Google docstrings, structlog, and domain exceptions",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "liorfr",
         "email": "lior@example.com"
