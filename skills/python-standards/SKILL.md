@@ -11,43 +11,45 @@ This skill enforces a consistent Python coding style focused on type safety, cle
 
 ## Project Structure
 
-Organize Python projects hierarchically with `utils/`, `models/`, and `tests/` at each level:
+Organize code into **layers with clear responsibilities**. Discover your project's natural hierarchy by asking:
+
+1. **What knows about nothing else?** → Foundation (config, utils, storage)
+2. **What represents core concepts?** → Domain (models, entities)
+3. **What coordinates those concepts?** → Application (services, orchestration)
+4. **What talks to the outside world?** → Interfaces (API, CLI)
+
+### Principles
+
+| Principle | Description |
+|-----------|-------------|
+| One direction | Dependencies flow downward, never upward |
+| One responsibility | Each folder answers ONE question |
+| No cycles | If A imports B, B cannot import A |
+| Clear boundaries | You can explain any folder in one sentence |
+
+### Minimal Structure
 
 ```
 project-name/
 ├── pyproject.toml
 ├── .python-version
+├── .env.example
 ├── src/
 │   ├── __init__.py
-│   ├── cli/                    # or api/
-│   │   ├── __init__.py
-│   │   └── main.py
-│   ├── utils/
-│   │   └── __init__.py
-│   ├── models/
-│   │   ├── __init__.py
-│   │   └── base.py             # BaseSchema
-│   └── core/
+│   ├── <layer>/              # Your discovered layers
+│   │   ├── __init__.py       # Document layer responsibility
+│   │   └── <module>.py
+│   └── models/
 │       ├── __init__.py
-│       └── <domain>/           # e.g., auth/, users/, orders/
-│           ├── __init__.py
-│           ├── service.py
-│           ├── repository.py
-│           ├── exceptions.py
-│           ├── utils/
-│           │   └── __init__.py
-│           ├── models/
-│           │   ├── __init__.py
-│           │   └── <model>.py
-│           └── tests/
-│               ├── __init__.py
-│               └── test_service.py
+│       └── base.py           # BaseSchema
+└── tests/                    # Mirror src/ structure
 ```
 
 **Key rules:**
 - One class or concern per file
-- Each domain module has its own `utils/`, `models/`, `tests/`
 - snake_case for all file and directory names
+- Document each layer's responsibility in its `__init__.py`
+- See `references/architecture.md` for the discovery process
 
 ## Tools
 
@@ -395,5 +397,6 @@ Scaffold templates available in `templates/`:
 ### References
 
 For detailed examples, see `references/`:
+- **`references/architecture.md`** - Layered architecture guide and migration
 - **`references/patterns.md`** - Common code patterns
 - **`references/config.md`** - Configuration patterns and examples
