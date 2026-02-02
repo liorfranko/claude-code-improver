@@ -358,3 +358,118 @@ from src.core.config import settings
 def get_db():
     return connect(settings.database_url)
 ```
+
+---
+
+## Parameter Design: Read Config at Point of Use
+
+**Don't pass config values through function layers. Read them where they're used.**
+
+When you see a parameter passed through multiple layers but only used at the end, that's a code smell. The value should be loaded at the point of use instead.
+
+### The Problem: Parameter Chains
+
+```python
+# ❌ BAD: Value passed through 3 layers, only used at the end
+class Orchestrator:
+    def create_evaluation(self, max_turns: int | None = None) -> Evaluation:
+        return Evaluation.create(max_turns=max_turns)
+
+class Evaluation:
+    @classmethod
+    def create(cls, max_turns: int | None = None) -> "Evaluation":
+        worker = WorkerAgent(max_turns=max_turns)
+        return cls(worker)
+
+class WorkerAgent:
+    def __init__(self, max_turns: int | None = None) -> None:
+        self.max_turns = max_turns or 200  # Finally used here!
+```
+
+Problems with this pattern:
+- Same default (200) appears in multiple places
+- Each layer adds `if max_turns is not None` checks
+- Adding a new config value requires changing every layer
+- Tests need to mock or pass the value through every layer
+
+### The Solution: Read Where Needed
+
+```python
+# ✅ GOOD: Read config at the point of use
+from src.core.config import settings
+
+class Orchestrator:
+    def create_evaluation(self) -> Evaluation:
+        return Evaluation.create()
+
+class Evaluation:
+    @classmethod
+    def create(cls) -> "Evaluation":
+        worker = WorkerAgent()
+        return cls(worker)
+
+class WorkerAgent:
+    def __init__(self) -> None:
+        self.max_turns = settings.worker.max_turns  # Read where used
+```
+
+### When to Pass Parameters
+
+Pass parameters through layers only when:
+1. **The value is different per call** - not config, but runtime data
+2. **Each layer transforms the value** - not just passing through
+3. **Testing requires injection** - but prefer mocking settings instead
+
+```python
+# ✅ OK to pass: This is runtime data, not config
+def process_request(self, user_id: str, request: Request) -> Response:
+    return self.handler.handle(user_id, request)
+
+# ❌ BAD to pass: This is config, doesn't change per call
+def process_request(self, user_id: str, timeout: int = 30) -> Response:
+    return self.handler.handle(user_id, timeout=timeout)
+
+# ✅ BETTER: Read config where used
+def process_request(self, user_id: str) -> Response:
+    return self.handler.handle(user_id)  # handler reads timeout from settings
+```
+
+### One Source of Truth for Defaults
+
+If you see the same default value in multiple places, consolidate it:
+
+```python
+# ❌ BAD: Default duplicated in 3 places
+class WorkerAgent:
+    def __init__(self, max_turns: int = 200): ...
+
+class Evaluation:
+    def create(self, max_turns: int = 200): ...
+
+# CLI
+max_turns = max_turns or 200
+
+# ✅ GOOD: Single source in settings
+# settings.py
+class WorkerSettings(BaseSettings):
+    max_turns: int = Field(default=200)
+
+# Everywhere else just reads from settings
+```
+
+### Before Adding a Parameter, Ask
+
+1. **Where does this value come from?** (user input, config, hardcoded)
+2. **Where is it actually consumed?** (which function/method uses it)
+3. **Does every layer in between actually need it?**
+
+If intermediate layers just pass it through → connect source to consumer directly.
+
+### Apply This to Other Config Values
+
+Look for parameters that flow through multiple layers but are only used at the end:
+- Model names
+- Timeout values
+- Retry counts
+- Permission modes
+- Any value that could be read from settings
