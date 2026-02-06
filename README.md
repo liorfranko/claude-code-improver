@@ -1,6 +1,14 @@
-# claude-code-improver
+# claude-python-standards
 
 A Claude Code plugin that enforces Python coding standards and scaffolds projects with a consistent structure.
+
+## Overview
+
+This plugin provides a complete Python development workflow with:
+- **1 Skill** (`python-standards`) - Auto-activates on Python projects
+- **1 Agent** (`python-reviewer`) - Proactive code review for convention adherence
+- **2 Commands** (`/python-init`, `/python-check`) - Project scaffolding and validation
+- **1 Hook** (`SessionStart`) - Detects Python projects and shows standards reminder
 
 ## Installation
 

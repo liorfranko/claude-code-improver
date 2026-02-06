@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-improver",
+  "name": "claude-python-standards",
   "version": "1.0.1",
-  "description": "Enforces Python coding standards: hierarchical structure, Pydantic, typing, Google docstrings, structlog, domain exceptions",
+  "description": "Claude Code plugin that enforces Python coding standards: hierarchical structure, Pydantic v2, typing, Google docstrings, structlog, domain exceptions",
   "author": {
     "name": "Lior Franko"
   },
